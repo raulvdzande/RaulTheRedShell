@@ -1,69 +1,81 @@
-import Image from "next/image";
+// app/page.tsx
+import Link from "next/link";
+import { getAllBlogs } from "@/lib/blog";
+import { getCurrentUser } from "@/lib/auth";
+import BlogCard from "./components/BlogCard";
 
-export default function Home() {
+export default async function HomePage() {
+  const user = await getCurrentUser();
+  const blogs = await getAllBlogs();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
+    <main className="min-h-screen flex flex-col bg-gradient-to-br from-white via-blue-50 to-blue-100">
+      {/* Hero Section */}
+      <section className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 text-center">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 mb-4 leading-tight">
+          Welcome to{" "}
+          <span className="text-blue-600 drop-shadow-sm">
+            RaulTheRedShell
+          </span>
+        </h1>
 
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.jsx file.
-          </h1>
+        <p className="text-lg sm:text-xl text-gray-700 max-w-2xl mx-auto mt-3">
+          Bekijk mijn game-progress, lees mijn blogs, reageer mee en volg
+          mijn journey als Nintendo-fan en livestreamer.
+        </p>
 
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+        <div className="mt-10 flex flex-wrap justify-center gap-4 sm:gap-6">
+          <Link href="/blogs">
+            <button className="px-6 py-3 bg-blue-600 text-white rounded-lg text-lg font-semibold shadow hover:bg-blue-700 transition w-full sm:w-auto">
+              Bekijk Blogs
+            </button>
+          </Link>
+
+          {user ? (
+            <Link href="/blogs/new">
+              <button className="px-6 py-3 bg-gray-100 border border-gray-300 text-gray-800 rounded-lg text-lg font-semibold hover:bg-gray-200 transition w-full sm:w-auto">
+                Nieuwe Blog
+              </button>
+            </Link>
+          ) : (
+            <Link href="/auth/login">
+              <button className="px-6 py-3 bg-gray-100 border border-gray-300 text-gray-800 rounded-lg text-lg font-semibold hover:bg-gray-200 transition w-full sm:w-auto">
+                Inloggen
+              </button>
+            </Link>
+          )}
         </div>
+      </section>
 
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
+      {/* Recent Blogs */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center">
+          Recente Blogs
+        </h2>
 
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        {blogs.length === 0 ? (
+          <p className="text-center text-gray-600">Nog geen blogs geplaatst.</p>
+        ) : (
+          <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {blogs.slice(0, 6).map((blog) => (
+              <BlogCard key={blog.id} blog={blog} />
+            ))}
+          </div>
+        )}
+
+        <div className="text-center mt-10">
+          <Link href="/blogs">
+            <button className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 transition">
+              Bekijk alle blogs
+            </button>
+          </Link>
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="mt-auto border-t py-6 text-center text-gray-500 text-sm bg-white/60 backdrop-blur">
+        © 2025 RaulTheRedShell — All Rights Reserved.
+      </footer>
+    </main>
   );
 }
