@@ -1,12 +1,16 @@
-// app/page.tsx
 import Link from "next/link";
 import { getAllBlogs } from "@/lib/blog";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, logoutAction } from "@/lib/auth";
 import BlogCard from "./components/BlogCard";
 
 export default async function HomePage() {
   const user = await getCurrentUser();
   const blogs = await getAllBlogs();
+
+  async function handleLogout() {
+    "use server";
+    await logoutAction();
+  }
 
   return (
     <main className="min-h-screen flex flex-col bg-gradient-to-br from-white via-blue-50 to-blue-100">
@@ -32,11 +36,19 @@ export default async function HomePage() {
           </Link>
 
           {user ? (
-            <Link href="/blogs/new">
-              <button className="px-6 py-3 bg-gray-100 border border-gray-300 text-gray-800 rounded-lg text-lg font-semibold hover:bg-gray-200 transition w-full sm:w-auto">
-                Nieuwe Blog
-              </button>
-            </Link>
+            <>
+              <Link href="/blogs/new">
+                <button className="px-6 py-3 bg-gray-100 border border-gray-300 text-gray-800 rounded-lg text-lg font-semibold hover:bg-gray-200 transition w-full sm:w-auto">
+                  Nieuwe Blog
+                </button>
+              </Link>
+
+              <form action={handleLogout}>
+                <button className="px-6 py-3 bg-red-500 text-white rounded-lg text-lg font-semibold shadow hover:bg-red-600 transition w-full sm:w-auto">
+                  Uitloggen
+                </button>
+              </form>
+            </>
           ) : (
             <Link href="/auth/login">
               <button className="px-6 py-3 bg-gray-100 border border-gray-300 text-gray-800 rounded-lg text-lg font-semibold hover:bg-gray-200 transition w-full sm:w-auto">
