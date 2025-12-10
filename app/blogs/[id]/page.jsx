@@ -1,5 +1,5 @@
 import { getBlogById, getBlogAuthors } from "@/lib/blog";
-import { getCommentsByBlog, createComment } from "@/lib/comment";
+import { getCommentsByBlog, createComment, updateComment } from "@/lib/comment";
 import { getCurrentUser } from "@/lib/auth";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -13,12 +13,24 @@ export async function addCommentAction(formData) {
   const blogId = Number(formData.get("blogId"));
   const user = await getCurrentUser();
 
-  if (!user) {
-    throw new Error("Je moet ingelogd zijn om te reageren.");
-  }
+  if (!user) throw new Error("Je moet ingelogd zijn om te reageren.");
 
   await createComment(content, user.id, blogId);
+  revalidatePath(`/blogs/${blogId}`);
+}
 
+/* --- SERVER ACTION: REACTIE UPDATEN --- */
+export async function editCommentAction(formData) {
+  "use server";
+
+  const content = formData.get("content");
+  const commentId = Number(formData.get("commentId"));
+  const blogId = Number(formData.get("blogId"));
+  const user = await getCurrentUser();
+
+  if (!user) throw new Error("Niet ingelogd.");
+
+  await updateComment(commentId, content);
   revalidatePath(`/blogs/${blogId}`);
 }
 
@@ -47,7 +59,7 @@ export default async function BlogDetailPage({ params }) {
         </Link>
       </div>
 
-      {/* BLOG DETAIL CARD */}
+      {/* BLOG DETAIL */}
       <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200">
 
         {/* Titel */}
@@ -83,11 +95,12 @@ export default async function BlogDetailPage({ params }) {
           ))}
         </article>
 
+
         {/* Reacties */}
         <section className="mt-14">
           <h2 className="text-2xl font-bold mb-4 text-gray-900">Reacties</h2>
 
-          {/* --- Reactie formulier --- */}
+          {/* --- Reactie plaatsen --- */}
           {user ? (
             <form
               action={addCommentAction}
@@ -119,19 +132,18 @@ export default async function BlogDetailPage({ params }) {
             </p>
           )}
 
-          {/* --- Reactie lijst --- */}
+          {/* --- Reacties lijst --- */}
           {comments.length === 0 ? (
             <p className="text-gray-500">Nog geen reacties.</p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {comments.map((c) => (
-                <div key={c.id} className="bg-gray-50 border p-4 rounded-lg">
-                  <p className="text-gray-700 mb-2">{c.content}</p>
-                  <p className="text-sm text-gray-700 mt-2">
-                    {c.username} —{" "}
-                    {new Date(c.created_at).toLocaleDateString()}
-                  </p>
-                </div>
+                <CommentItem
+                  key={c.id}
+                  comment={c}
+                  user={user}
+                  blogId={blogId}
+                />
               ))}
             </div>
           )}
@@ -139,5 +151,54 @@ export default async function BlogDetailPage({ params }) {
 
       </div>
     </main>
+  );
+}
+
+/* ---------------------------------------------------------
+   🧩 INLINE COMPONENT VOOR COMMENT + EDIT MODE
+--------------------------------------------------------- */
+function CommentItem({ comment, user, blogId }) {
+  const isOwner = user && user.id === comment.user_id;
+
+  return (
+    <div className="bg-gray-50 border p-4 rounded-lg relative">
+      
+      {/* COMMENT TEKST */}
+      <p className="text-gray-800">{comment.content}</p>
+
+      {/* METADATA */}
+      <p className="text-sm text-gray-500 mt-2">
+        {comment.username} — {new Date(comment.created_at).toLocaleDateString()}
+      </p>
+
+      {/* EDIT ICOON */}
+      {isOwner && (
+        <details className="mt-3">
+          <summary className="cursor-pointer text-blue-600 hover:underline">
+            ✏️ Bewerken
+          </summary>
+
+          {/* INLINE EDIT FORM */}
+          <form action={editCommentAction} className="mt-3 space-y-2">
+            <input type="hidden" name="commentId" value={comment.id} />
+            <input type="hidden" name="blogId" value={blogId} />
+
+            <textarea
+              name="content"
+              required
+              defaultValue={comment.content}
+              className="w-full border rounded-lg px-3 py-2 min-h-[100px] focus:ring-2 focus:ring-blue-500 text-gray-700"
+            />
+
+            <button
+              type="submit"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            >
+              Opslaan
+            </button>
+          </form>
+        </details>
+      )}
+    </div>
   );
 }
