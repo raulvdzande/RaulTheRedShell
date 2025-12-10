@@ -1,5 +1,5 @@
 import { getBlogById, getBlogAuthors } from "@/lib/blog";
-import { getCommentsByBlog, createComment, updateComment } from "@/lib/comment";
+import { getCommentsByBlog, createComment, updateComment, deleteComment } from "@/lib/comment";
 import { getCurrentUser } from "@/lib/auth";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -26,11 +26,19 @@ export async function editCommentAction(formData) {
   const content = formData.get("content");
   const commentId = Number(formData.get("commentId"));
   const blogId = Number(formData.get("blogId"));
-  const user = await getCurrentUser();
-
-  if (!user) throw new Error("Niet ingelogd.");
 
   await updateComment(commentId, content);
+  revalidatePath(`/blogs/${blogId}`);
+}
+
+/* --- SERVER ACTION: REACTIE VERWIJDEREN --- */
+export async function deleteCommentAction(formData) {
+  "use server";
+
+  const commentId = Number(formData.get("commentId"));
+  const blogId = Number(formData.get("blogId"));
+
+  await deleteComment(commentId);
   revalidatePath(`/blogs/${blogId}`);
 }
 
@@ -50,7 +58,7 @@ export default async function BlogDetailPage({ params }) {
   return (
     <main className="min-h-screen bg-gradient-to-br from-white to-blue-50 px-4 py-10">
 
-      {/* ⬅️ TERUG NAAR BLOGS */}
+      {/* TERUG KNOP */}
       <div className="max-w-4xl mx-auto mb-6">
         <Link href="/blogs">
           <button className="px-5 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
@@ -59,7 +67,7 @@ export default async function BlogDetailPage({ params }) {
         </Link>
       </div>
 
-      {/* BLOG DETAIL */}
+      {/* BLOG CONTENT */}
       <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200">
 
         {/* Titel */}
@@ -95,12 +103,11 @@ export default async function BlogDetailPage({ params }) {
           ))}
         </article>
 
-
-        {/* Reacties */}
+        {/* REACTIES */}
         <section className="mt-14">
           <h2 className="text-2xl font-bold mb-4 text-gray-900">Reacties</h2>
 
-          {/* --- Reactie plaatsen --- */}
+          {/* COMMENT TOEVOEGEN */}
           {user ? (
             <form
               action={addCommentAction}
@@ -108,12 +115,11 @@ export default async function BlogDetailPage({ params }) {
             >
               <input type="hidden" name="blogId" value={blogId} />
 
-              <label className="block font-medium mb-2 text-gray-700">Jouw reactie</label>
               <textarea
                 name="content"
                 required
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 text-gray-700 focus:ring-blue-500 min-h-[120px]"
                 placeholder="Typ hier je reactie..."
+                className="w-full px-3 py-2 border rounded-lg min-h-[120px] text-gray-700 focus:ring-2 focus:ring-blue-500"
               />
 
               <button
@@ -125,45 +131,52 @@ export default async function BlogDetailPage({ params }) {
             </form>
           ) : (
             <p className="text-gray-600 mb-6">
-              <Link href="/auth/login" className="text-blue-600 underline">
-                Log in
-              </Link>{" "}
-              om een reactie te plaatsen.
+              <Link href="/auth/login" className="text-blue-600 underline">Log in</Link> om te reageren.
             </p>
           )}
 
-          {/* --- Reacties lijst --- */}
+          {/* COMMENT LIJST */}
           {comments.length === 0 ? (
             <p className="text-gray-500">Nog geen reacties.</p>
           ) : (
             <div className="space-y-6">
               {comments.map((c) => (
-                <CommentItem
-                  key={c.id}
-                  comment={c}
-                  user={user}
-                  blogId={blogId}
-                />
+                <CommentItem key={c.id} comment={c} user={user} blogId={blogId} />
               ))}
             </div>
           )}
         </section>
-
       </div>
     </main>
   );
 }
 
 /* ---------------------------------------------------------
-   🧩 INLINE COMPONENT VOOR COMMENT + EDIT MODE
+   COMMENT ITEM MET EDIT + DELETE
 --------------------------------------------------------- */
 function CommentItem({ comment, user, blogId }) {
   const isOwner = user && user.id === comment.user_id;
 
   return (
     <div className="bg-gray-50 border p-4 rounded-lg relative">
-      
-      {/* COMMENT TEKST */}
+
+      {/* DELETE BUTTON (RECHTS BOVEN) */}
+      {isOwner && (
+        <form action={deleteCommentAction} className="absolute top-3 right-3">
+          <input type="hidden" name="commentId" value={comment.id} />
+          <input type="hidden" name="blogId" value={blogId} />
+
+          <button
+            type="submit"
+            className="text-red-600 hover:text-red-800 text-xl"
+            title="Verwijderen"
+          >
+            🗑️
+          </button>
+        </form>
+      )}
+
+      {/* COMMENT TEXT */}
       <p className="text-gray-800">{comment.content}</p>
 
       {/* METADATA */}
@@ -171,14 +184,13 @@ function CommentItem({ comment, user, blogId }) {
         {comment.username} — {new Date(comment.created_at).toLocaleDateString()}
       </p>
 
-      {/* EDIT ICOON */}
+      {/* EDIT */}
       {isOwner && (
         <details className="mt-3">
           <summary className="cursor-pointer text-blue-600 hover:underline">
             ✏️ Bewerken
           </summary>
 
-          {/* INLINE EDIT FORM */}
           <form action={editCommentAction} className="mt-3 space-y-2">
             <input type="hidden" name="commentId" value={comment.id} />
             <input type="hidden" name="blogId" value={blogId} />
