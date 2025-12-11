@@ -1,11 +1,18 @@
 import { getBlogById, getBlogAuthors } from "@/lib/blog";
-import { getCommentsByBlog, createComment, updateComment, deleteComment } from "@/lib/comment";
+import {
+  getCommentsByBlog,
+  createComment,
+  updateComment,
+  deleteComment,
+} from "@/lib/comment";
 import { getCurrentUser } from "@/lib/auth";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-/* --- SERVER ACTION: REACTIE PLAATSEN --- */
+/* ----------------------------------------------------
+   REACTIE PLAATSEN
+---------------------------------------------------- */
 export async function addCommentAction(formData) {
   "use server";
 
@@ -19,7 +26,9 @@ export async function addCommentAction(formData) {
   revalidatePath(`/blogs/${blogId}`);
 }
 
-/* --- SERVER ACTION: REACTIE UPDATEN --- */
+/* ----------------------------------------------------
+   REACTIE UPDATEN
+---------------------------------------------------- */
 export async function editCommentAction(formData) {
   "use server";
 
@@ -31,7 +40,9 @@ export async function editCommentAction(formData) {
   revalidatePath(`/blogs/${blogId}`);
 }
 
-/* --- SERVER ACTION: REACTIE VERWIJDEREN --- */
+/* ----------------------------------------------------
+   REACTIE VERWIJDEREN
+---------------------------------------------------- */
 export async function deleteCommentAction(formData) {
   "use server";
 
@@ -42,29 +53,44 @@ export async function deleteCommentAction(formData) {
   revalidatePath(`/blogs/${blogId}`);
 }
 
+/* ----------------------------------------------------
+   PAGE RENDER
+---------------------------------------------------- */
 export default async function BlogDetailPage({ params }) {
-  const resolvedParams = await params;
+  const resolvedParams = await params; // Next.js 16 fix
   const blogId = Number(resolvedParams.id);
 
   if (!blogId || isNaN(blogId)) return notFound();
 
-  const user = await getCurrentUser();
+  const user = await getCurrentUser(); // ⭐ BELANGRIJK
   const blog = await getBlogById(blogId);
+
   if (!blog) return notFound();
 
-  const authors = await getBlogAuthors(blogId);
+  const authors = await getBlogAuthors(blogId); // ⭐ Gekoppelde gebruikers
   const comments = await getCommentsByBlog(blogId);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-white to-blue-50 px-4 py-10">
 
-      {/* TERUG KNOP */}
-      <div className="max-w-4xl mx-auto mb-6">
+      {/* 🔵 TOP NAVIGATION: TERUG + BEHEER AUTEURS */}
+      <div className="max-w-4xl mx-auto mb-6 flex justify-between items-center">
+
+        {/* TERUG */}
         <Link href="/blogs">
           <button className="px-5 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
             ← Terug naar Blogs
           </button>
         </Link>
+
+        {/* BEHEER AUTEURS KNOP — alleen als ingelogd */}
+        {user && (
+          <Link href={`/blogs/${blogId}/authors`}>
+            <button className="px-5 py-2 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 transition">
+              👥 Beheer Auteurs
+            </button>
+          </Link>
+        )}
       </div>
 
       {/* BLOG CONTENT */}
@@ -105,9 +131,9 @@ export default async function BlogDetailPage({ params }) {
 
         {/* REACTIES */}
         <section className="mt-14">
-          <h2 className="text-2xl font-bold mb-4 text-gray-900">Reacties</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Reacties</h2>
 
-          {/* COMMENT TOEVOEGEN */}
+          {/* Reactie toevoegen */}
           {user ? (
             <form
               action={addCommentAction}
@@ -118,8 +144,8 @@ export default async function BlogDetailPage({ params }) {
               <textarea
                 name="content"
                 required
-                placeholder="Typ hier je reactie..."
                 className="w-full px-3 py-2 border rounded-lg min-h-[120px] text-gray-700 focus:ring-2 focus:ring-blue-500"
+                placeholder="Typ hier je reactie..."
               />
 
               <button
@@ -131,17 +157,25 @@ export default async function BlogDetailPage({ params }) {
             </form>
           ) : (
             <p className="text-gray-600 mb-6">
-              <Link href="/auth/login" className="text-blue-600 underline">Log in</Link> om te reageren.
+              <Link href="/auth/login" className="text-blue-600 underline">
+                Log in
+              </Link>{" "}
+              om reacties te plaatsen.
             </p>
           )}
 
-          {/* COMMENT LIJST */}
+          {/* Reactielijst */}
           {comments.length === 0 ? (
             <p className="text-gray-500">Nog geen reacties.</p>
           ) : (
             <div className="space-y-6">
               {comments.map((c) => (
-                <CommentItem key={c.id} comment={c} user={user} blogId={blogId} />
+                <CommentItem
+                  key={c.id}
+                  comment={c}
+                  user={user}
+                  blogId={blogId}
+                />
               ))}
             </div>
           )}
@@ -152,7 +186,7 @@ export default async function BlogDetailPage({ params }) {
 }
 
 /* ---------------------------------------------------------
-   COMMENT ITEM MET EDIT + DELETE
+   COMMENT ITEM COMPONENT (EDIT + DELETE)
 --------------------------------------------------------- */
 function CommentItem({ comment, user, blogId }) {
   const isOwner = user && user.id === comment.user_id;
@@ -160,12 +194,11 @@ function CommentItem({ comment, user, blogId }) {
   return (
     <div className="bg-gray-50 border p-4 rounded-lg relative">
 
-      {/* DELETE BUTTON (RECHTS BOVEN) */}
+      {/* Delete knop rechtsboven */}
       {isOwner && (
         <form action={deleteCommentAction} className="absolute top-3 right-3">
           <input type="hidden" name="commentId" value={comment.id} />
           <input type="hidden" name="blogId" value={blogId} />
-
           <button
             type="submit"
             className="text-red-600 hover:text-red-800 text-xl"
@@ -176,18 +209,17 @@ function CommentItem({ comment, user, blogId }) {
         </form>
       )}
 
-      {/* COMMENT TEXT */}
+      {/* Comment text */}
       <p className="text-gray-800">{comment.content}</p>
 
-      {/* METADATA */}
       <p className="text-sm text-gray-500 mt-2">
         {comment.username} — {new Date(comment.created_at).toLocaleDateString()}
       </p>
 
-      {/* EDIT */}
+      {/* Edit reactie */}
       {isOwner && (
         <details className="mt-3">
-          <summary className="cursor-pointer text-blue-600 hover:underline">
+          <summary className="cursor-pointer text-blue-600 hover:underline flex items-center">
             ✏️ Bewerken
           </summary>
 
