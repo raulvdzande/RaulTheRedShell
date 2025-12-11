@@ -1,9 +1,4 @@
 import { getBlogById, getBlogAuthors } from "@/lib/blog";
-<<<<<<< Updated upstream
-import { getCommentsByBlog } from "@/lib/comment";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-=======
 import {
   getCommentsByBlog,
   createComment,
@@ -57,7 +52,6 @@ export async function deleteCommentAction(formData) {
   await deleteComment(commentId);
   revalidatePath(`/blogs/${blogId}`);
 }
->>>>>>> Stashed changes
 
 /* ----------------------------------------------------
    PAGE RENDER
@@ -78,13 +72,8 @@ export default async function BlogDetailPage({ params }) {
   return (
     <main className="min-h-screen bg-gradient-to-br from-white to-blue-50 px-4 py-10">
 
-<<<<<<< Updated upstream
-      {/* ⬅️ TERUG NAAR BLOGS — NU BOVENAAN EN BUITEN DE BLOG-CARD */}
-      <div className="max-w-4xl mx-auto mb-6">
-=======
       {/* 🔵 TOP NAVIGATION: TERUG + BEHEER AUTEURS */}
       <div className="max-w-4xl mx-auto mb-6 flex justify-between items-center">
->>>>>>> Stashed changes
         <Link href="/blogs">
           <button className="px-5 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
             ← Terug naar Blogs
@@ -140,8 +129,6 @@ export default async function BlogDetailPage({ params }) {
         <section className="mt-14">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Reacties</h2>
 
-<<<<<<< Updated upstream
-=======
           {/* Voeg reactie toe */}
           {user ? (
             <form
@@ -174,27 +161,17 @@ export default async function BlogDetailPage({ params }) {
           )}
 
           {/* Reactielijst */}
->>>>>>> Stashed changes
           {comments.length === 0 ? (
             <p className="text-gray-500">Nog geen reacties.</p>
           ) : (
             <div className="space-y-4">
               {comments.map((c) => (
-<<<<<<< Updated upstream
-                <div key={c.id} className="bg-gray-50 border p-4 rounded-lg">
-                  <p>{c.content}</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    {c.username} – {new Date(c.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-=======
                 <CommentItem
                   key={c.id}
                   comment={c}
                   user={user}
                   blogId={blogId}
                 />
->>>>>>> Stashed changes
               ))}
             </div>
           )}
@@ -203,8 +180,6 @@ export default async function BlogDetailPage({ params }) {
       </div>
     </main>
   );
-<<<<<<< Updated upstream
-=======
 }
 
 /* ---------------------------------------------------------
@@ -267,5 +242,4 @@ function CommentItem({ comment, user, blogId }) {
       )}
     </div>
   );
->>>>>>> Stashed changes
 }
