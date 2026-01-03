@@ -49,20 +49,18 @@ export default async function AuthorsPage({ params }) {
   const authors = await getBlogAuthors(blogId);
   const users = await getAllUsers();
 
-  // users die nog NIET gekoppeld zijn
-  const availableUsers = users.filter(
-    (u) => !authors.some((a) => a.id === u.id)
-  );
+  const availableUsers = users.filter((u) => !authors.some((a) => a.id === u.id));
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-white to-purple-50 px-4 py-10">
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow border border-gray-200">
 
-        {/* TERUG */}
-        <Link href={`/blogs/${blogId}`}>
-          <button className="mb-6 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
-            ← Terug naar blog
-          </button>
+        {/* TERUG (geen button in a) */}
+        <Link
+          href={`/blogs/${blogId}`}
+          className="inline-block mb-6 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
+        >
+          ← Terug naar blog
         </Link>
 
         <h1 className="text-3xl font-bold text-gray-900 mb-6">
@@ -84,11 +82,15 @@ export default async function AuthorsPage({ params }) {
                 >
                   <span className="font-medium text-gray-800">{author.username}</span>
 
-                  <form action={removeAuthorAction}>
+                  {/* validator-proof action + server action via formAction */}
+                  <form method="post" action={`/blogs/${blogId}/authors`}>
                     <input type="hidden" name="blogId" value={blogId} />
                     <input type="hidden" name="userId" value={author.id} />
 
-                    <button className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition">
+                    <button
+                      formAction={removeAuthorAction}
+                      className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                    >
                       Verwijderen
                     </button>
                   </form>
@@ -106,7 +108,8 @@ export default async function AuthorsPage({ params }) {
             <p className="text-gray-700">Geen gebruikers beschikbaar om toe te voegen.</p>
           ) : (
             <form
-              action={addAuthorAction}
+              method="post"
+              action={`/blogs/${blogId}/authors`}
               className="flex flex-col sm:flex-row gap-4 items-start"
             >
               <input type="hidden" name="blogId" value={blogId} />
@@ -124,7 +127,10 @@ export default async function AuthorsPage({ params }) {
                 ))}
               </select>
 
-              <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+              <button
+                formAction={addAuthorAction}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              >
                 Toevoegen
               </button>
             </form>
