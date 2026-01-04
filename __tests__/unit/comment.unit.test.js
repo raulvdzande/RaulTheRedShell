@@ -52,7 +52,7 @@ describe("Unit: Blog (CRUD)", () => {
   });
 
   test("deleteBlog", async () => {
-    // deleteBlog doet meerdere queries (comments, authors, blog)
+    // deleteBlog doet meerdere queries voor comments, authors, blog
     queue.push(async () => [{}]);
     queue.push(async () => [{}]);
     queue.push(async () => [{}]);

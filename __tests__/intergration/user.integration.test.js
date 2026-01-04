@@ -10,7 +10,7 @@ import {
 describe("Integration: User (create/read/readById/readAll)", () => {
   let userId;
 
-  // ✅ UNIEK username + email
+  // Unieke username + email
   const unique = Date.now();
   const username = `integration_${unique}`;
   const email = `integration_${unique}@test.nl`;

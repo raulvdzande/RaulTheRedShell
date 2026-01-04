@@ -1,8 +1,5 @@
 import { describe, test, expect, mock, beforeEach } from "bun:test";
 
-/* ------------------------------------------------
-   MOCK DATABASE
------------------------------------------------- */
 let queue = [];
 const queryMock = mock(async () => {
   const fn = queue.shift();
@@ -15,9 +12,6 @@ mock.module("@/lib/db", () => ({
   },
 }));
 
-/* ------------------------------------------------
-   🔥 CORRECTE BCRYPT MOCK VOOR BUN
------------------------------------------------- */
 mock.module("bcrypt", () => {
   const hash = async () => "hashed-password";
   const compare = async () => true;
@@ -25,13 +19,10 @@ mock.module("bcrypt", () => {
   return {
     hash,
     compare,
-    default: { hash, compare }, // 👈 DIT IS DE FIX
+    default: { hash, compare },
   };
 });
 
-/* ------------------------------------------------
-   IMPORT NA MOCKS
------------------------------------------------- */
 const {
   createUser,
   getUserByEmail,
@@ -39,9 +30,6 @@ const {
   getAllUsers,
 } = await import("@/lib/user");
 
-/* ------------------------------------------------
-   TESTS
------------------------------------------------- */
 describe("Unit: User (create/read/readById/readAll)", () => {
   beforeEach(() => {
     queue = [];

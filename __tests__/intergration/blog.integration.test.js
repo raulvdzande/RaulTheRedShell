@@ -39,7 +39,7 @@ describe("Integration: Blog (CRUD)", () => {
     20000
   );
 
-  // extra safety cleanup (als iets faalt)
+  // extra safety cleanup voor als iets faalt
   test(
     "cleanup safety",
     async () => {
