@@ -10,9 +10,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-/* ----------------------------------------------------
-   REACTIE PLAATSEN
----------------------------------------------------- */
+
 export async function addCommentAction(formData) {
   "use server";
 
@@ -26,9 +24,6 @@ export async function addCommentAction(formData) {
   revalidatePath(`/blogs/${blogId}`);
 }
 
-/* ----------------------------------------------------
-   REACTIE UPDATEN
----------------------------------------------------- */
 export async function editCommentAction(formData) {
   "use server";
 
@@ -40,9 +35,7 @@ export async function editCommentAction(formData) {
   revalidatePath(`/blogs/${blogId}`);
 }
 
-/* ----------------------------------------------------
-   REACTIE VERWIJDEREN
----------------------------------------------------- */
+
 export async function deleteCommentAction(formData) {
   "use server";
 
@@ -53,37 +46,31 @@ export async function deleteCommentAction(formData) {
   revalidatePath(`/blogs/${blogId}`);
 }
 
-/* ----------------------------------------------------
-   PAGE RENDER
----------------------------------------------------- */
 export default async function BlogDetailPage({ params }) {
   const resolvedParams = await params; // Next.js 16 fix
   const blogId = Number(resolvedParams.id);
 
   if (!blogId || isNaN(blogId)) return notFound();
 
-  const user = await getCurrentUser(); // ⭐ BELANGRIJK
+  const user = await getCurrentUser();
   const blog = await getBlogById(blogId);
 
   if (!blog) return notFound();
 
-  const authors = await getBlogAuthors(blogId); // ⭐ Gekoppelde gebruikers
+  const authors = await getBlogAuthors(blogId);
   const comments = await getCommentsByBlog(blogId);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-white to-blue-50 px-4 py-10">
 
-      {/* 🔵 TOP NAVIGATION: TERUG + BEHEER AUTEURS */}
       <div className="max-w-4xl mx-auto mb-6 flex justify-between items-center">
 
-        {/* TERUG */}
         <Link href="/blogs">
           <button className="px-5 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
             ← Terug naar Blogs
           </button>
         </Link>
 
-        {/* BEHEER AUTEURS KNOP — alleen als ingelogd */}
         {user && (
           <Link href={`/blogs/${blogId}/authors`}>
             <button className="px-5 py-2 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 transition">
@@ -93,15 +80,12 @@ export default async function BlogDetailPage({ params }) {
         )}
       </div>
 
-      {/* BLOG CONTENT */}
       <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200">
 
-        {/* Titel */}
         <h1 className="text-4xl font-extrabold text-gray-900 mb-4 break-words">
           {blog.title}
         </h1>
 
-        {/* Metadata */}
         <div className="flex flex-wrap items-center gap-4 text-gray-500 text-sm mb-6">
           <span>
             Gepubliceerd op{" "}
@@ -122,18 +106,15 @@ export default async function BlogDetailPage({ params }) {
           )}
         </div>
 
-        {/* Inhoud */}
         <article className="prose prose-blue max-w-none text-gray-800 leading-relaxed">
           {blog.content.split("\n").map((p, i) => (
             <p key={i}>{p}</p>
           ))}
         </article>
 
-        {/* REACTIES */}
         <section className="mt-14">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Reacties</h2>
 
-          {/* Reactie toevoegen */}
           {user ? (
             <form
               action={addCommentAction}
@@ -185,16 +166,12 @@ export default async function BlogDetailPage({ params }) {
   );
 }
 
-/* ---------------------------------------------------------
-   COMMENT ITEM COMPONENT (EDIT + DELETE)
---------------------------------------------------------- */
 function CommentItem({ comment, user, blogId }) {
   const isOwner = user && user.id === comment.user_id;
 
   return (
     <div className="bg-gray-50 border p-4 rounded-lg relative">
 
-      {/* Delete knop rechtsboven */}
       {isOwner && (
         <form action={deleteCommentAction} className="absolute top-3 right-3">
           <input type="hidden" name="commentId" value={comment.id} />
@@ -209,14 +186,12 @@ function CommentItem({ comment, user, blogId }) {
         </form>
       )}
 
-      {/* Comment text */}
       <p className="text-gray-800">{comment.content}</p>
 
       <p className="text-sm text-gray-500 mt-2">
         {comment.username} — {new Date(comment.created_at).toLocaleDateString()}
       </p>
 
-      {/* Edit reactie */}
       {isOwner && (
         <details className="mt-3">
           <summary className="cursor-pointer text-blue-600 hover:underline flex items-center">

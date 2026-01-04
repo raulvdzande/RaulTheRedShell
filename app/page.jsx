@@ -14,7 +14,6 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen flex flex-col bg-gradient-to-br from-white via-blue-50 to-blue-100">
-      {/* Hero Section */}
       <section className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 text-center">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 mb-4 leading-tight">
           Welcome to{" "}
@@ -59,7 +58,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Recent Blogs */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center">
           Recente Blogs
@@ -84,7 +82,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="mt-auto border-t py-6 text-center text-gray-500 text-sm bg-white/60 backdrop-blur">
         © 2025 RaulTheRedShell — All Rights Reserved.
       </footer>

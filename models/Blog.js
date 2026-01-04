@@ -6,7 +6,6 @@ export default class Blog {
     this.createdAt = createdAt;
   }
 
-  // Domeinlogica
   async create(title, content) {}
 
   async edit(title, content) {}

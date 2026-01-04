@@ -5,9 +5,6 @@ import { redirect, notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
 
-/* ----------------------------------------------------
-   ADD AUTHOR
----------------------------------------------------- */
 export async function addAuthorAction(formData) {
   "use server";
 
@@ -18,9 +15,6 @@ export async function addAuthorAction(formData) {
   revalidatePath(`/blogs/${blogId}/authors`);
 }
 
-/* ----------------------------------------------------
-   REMOVE AUTHOR
----------------------------------------------------- */
 export async function removeAuthorAction(formData) {
   "use server";
 
@@ -31,9 +25,6 @@ export async function removeAuthorAction(formData) {
   revalidatePath(`/blogs/${blogId}/authors`);
 }
 
-/* ----------------------------------------------------
-   PAGE
----------------------------------------------------- */
 export default async function AuthorsPage({ params }) {
   const resolvedParams = await params;
   const blogId = Number(resolvedParams.id);
@@ -55,7 +46,6 @@ export default async function AuthorsPage({ params }) {
     <main className="min-h-screen bg-gradient-to-br from-white to-purple-50 px-4 py-10">
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow border border-gray-200">
 
-        {/* TERUG (geen button in a) */}
         <Link
           href={`/blogs/${blogId}`}
           className="inline-block mb-6 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
@@ -67,7 +57,6 @@ export default async function AuthorsPage({ params }) {
           👥 Auteurs beheren — "{blog.title}"
         </h1>
 
-        {/* HUIDIGE AUTEURS */}
         <section className="mb-10">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Gekoppelde auteurs</h2>
 
@@ -82,7 +71,6 @@ export default async function AuthorsPage({ params }) {
                 >
                   <span className="font-medium text-gray-800">{author.username}</span>
 
-                  {/* validator-proof action + server action via formAction */}
                   <form method="post" action={`/blogs/${blogId}/authors`}>
                     <input type="hidden" name="blogId" value={blogId} />
                     <input type="hidden" name="userId" value={author.id} />
@@ -100,7 +88,6 @@ export default async function AuthorsPage({ params }) {
           )}
         </section>
 
-        {/* GEBRUIKERS TOEVOEGEN */}
         <section>
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Auteur toevoegen</h2>
 

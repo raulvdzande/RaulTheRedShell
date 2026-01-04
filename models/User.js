@@ -7,9 +7,7 @@ export default class User {
     this.createdAt = createdAt;
   }
 
-  // Domeinlogica
   async register(username, email, password) {
-    // validaties → database calls komen in /lib/user.js
   }
 
   async login(email, password) {}
